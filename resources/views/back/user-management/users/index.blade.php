@@ -4,7 +4,7 @@
 <div class="container-xxl flex-grow-1 container-p-y">
     <h4 class="mb-1">{{ __($title) }}</h4>
 
-    <div class="mb-6 row g-6">
+    {{-- <div class="mb-6 row g-6">
         <div class="col-sm-6 col-xl-3">
             <div class="card">
                 <div class="card-body">
@@ -89,7 +89,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Users List Table -->
     <div class="card">

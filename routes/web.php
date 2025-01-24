@@ -33,5 +33,5 @@ Route::prefix('backoffice')->middleware(['auth'])->group(function () {
         Route::resource('user-management/users', UserController::class);
     });
 
-    Route::get('import-pos-eweb', [ImportEwebController::class, 'index'])->name('import-eweb');
+    Route::resource('import-pos-eweb', ImportEwebController::class);
 });

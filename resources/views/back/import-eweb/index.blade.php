@@ -7,12 +7,12 @@
         <div class="card">
             <h5 class="card-header">Import POS Eweb (EXCEL)</h5>
             <div class="card-body">
-                <form id="myForm" class="row g-6" method="POST" action="{{ route('users.change-password-update') }}">
+                <form id="myForm" class="row g-6" method="POST" action="{{ route('import-pos-eweb.store') }}" enctype="multipart/form-data">
+                    @method('post')
                     @csrf
-                    @method('PATCH')
                     <div class="card-body">
                         <div class="mb-4">
-                            <a href="">Download Template</a>
+                            <a href="{{ asset('back/assets/excel/template-import-pos.xlsx') }}">Download Template</a>
                         </div>
                         <div class="mb-4">
                             <label for="pos_excel" class="form-label">File Excel</label>
