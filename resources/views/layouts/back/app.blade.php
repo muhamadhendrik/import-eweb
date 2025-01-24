@@ -13,10 +13,13 @@
 
     @include('layouts.back.partials._head')
 
+    @vite(['resources/js/app.js'])
+
     @stack('styles')
 </head>
 
 <body>
+
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">

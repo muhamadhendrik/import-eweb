@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Back;
 
 use App\Http\Controllers\Controller;
 use App\Imports\OrderImport;
+use App\Jobs\ImportEwebJob;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -17,14 +18,20 @@ class ImportEwebController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'pos_excel' => 'required|file|mimes:xlsx,xls',
+            'pos_excel' => 'required|file',
         ]);
 
-        try {
-            Excel::import(new OrderImport, $request->file('pos_excel'));
-            return back()->with('success', 'Data imported successfully.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Failed to import data: ' . $e->getMessage());
+        $file = $request->file('pos_excel');
+        $rows = Excel::toArray(new \App\Imports\OrderImport, $file)[0];
+
+        $chunkSize = 100; // Jumlah baris per job
+        $totalRows = count($rows);
+        $batchIndex = 0;
+
+        foreach (array_chunk($rows, $chunkSize) as $chunk) {
+            ImportEwebJob::dispatch($chunk, $totalRows, $batchIndex++);
         }
+
+        return back()->with('success', 'Proses impor sedang berjalan. Anda dapat memantau progres.');
     }
 }
