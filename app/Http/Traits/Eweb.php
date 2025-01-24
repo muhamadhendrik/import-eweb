@@ -9,6 +9,7 @@ trait Eweb
 {
     public function syncCustomerEweb($customer)
     {
+        $id_branches = [];
         if ($customer["id_branches"] == 'SGOS') {
             $id_branches[] = '83';
         }
@@ -67,6 +68,9 @@ trait Eweb
 
     public function addPos($data)
     {
+        $id_company = config('eweb.id_company_sgos', '83');
+        $idtipetrans = config('eweb.idtipetrans', 1781);
+
         if ($data["id_company"] == 'SGOS') {
             $id_company = '83';
         }
@@ -94,8 +98,8 @@ trait Eweb
             'kode_transaksi'    => 'POS',
             'no_sinv'           => $data['no_sinv'],
             'date_sinv'         => $date_sinv,
-            'idtipetrans'       => 1781,
-            'detail'            =>  $arr_detail,
+            'idtipetrans'       => $idtipetrans,
+            'detail'            => $arr_detail,
             'catatan'           => $data['catatan'],
         );
 
@@ -103,42 +107,42 @@ trait Eweb
         return $this->curl_post('add-pos', $arr_data);
     }
 
-    function curl_post($action_url, $payloads = [])
+    public function curl_post($action_url, $payloads = [])
     {
         $url = config('eweb.base_url') . '/' . $action_url;
         $url .= '?username=' . config('eweb.username') . '&apikey=' . config('eweb.api_key');
 
         $data_json = http_build_query($payloads);
-        $curl = curl_init($url);
 
-        curl_setopt_array($curl, array(
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => $data_json,
-            CURLOPT_HTTPHEADER => array(
-                "cache-control: no-cache"
-            ),
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_SSL_VERIFYPEER => false,
-        ));
+        try {
+            $curl = curl_init($url);
 
-        $response_raw = curl_exec($curl);
-        $err = curl_error($curl);
+            curl_setopt_array($curl, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $data_json,
+                CURLOPT_HTTPHEADER => ["cache-control: no-cache"],
+                CURLOPT_SSL_VERIFYHOST => false,
+                CURLOPT_SSL_VERIFYPEER => false,
+            ]);
 
-        curl_close($curl);
+            $response_raw = curl_exec($curl);
 
-        if ($err) {
-            $result = $err;
-        } else {
-            $response = json_decode($response_raw, TRUE);
-            $result = $response;
+            if (curl_errno($curl)) {
+                throw new \Exception(curl_error($curl));
+            }
+
+            curl_close($curl);
+            $response = json_decode($response_raw, true);
+
+            if (!$response) {
+                throw new \Exception('Invalid JSON response');
+            }
+
+            return $response;
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
         }
-
-        return $result;
     }
 
     function dateformat_short($date)

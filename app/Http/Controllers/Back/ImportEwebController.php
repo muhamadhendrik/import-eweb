@@ -16,13 +16,15 @@ class ImportEwebController extends Controller
 
     public function store(Request $request)
     {
-        // Validate incoming request data
         $request->validate([
-            'pos_excel' => 'required',
+            'pos_excel' => 'required|file|mimes:xlsx,xls',
         ]);
 
-        Excel::import(new OrderImport, $request->file('pos_excel'));
-
-        return back()->with('success', 'Data imported successfully.');
+        try {
+            Excel::import(new OrderImport, $request->file('pos_excel'));
+            return back()->with('success', 'Data imported successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to import data: ' . $e->getMessage());
+        }
     }
 }
