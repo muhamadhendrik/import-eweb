@@ -12,6 +12,8 @@ trait Eweb
         $id_branches = [];
         if ($customer["id_branches"] == 'SATWAGIA OFFICIAL STORE') {
             $id_branches[] = '44';
+        }elseif ($customer["id_branches"] == 'PT TEKNOLOGI DIGITAL VETERINER') {
+            $id_branches[] = '24';
         }
 
         // Mengubah array menjadi string
@@ -73,6 +75,8 @@ trait Eweb
 
         if ($data["id_company"] == 'SATWAGIA OFFICIAL STORE') {
             $id_company = '44';
+        }elseif ($data["id_branches"] == 'PT TEKNOLOGI DIGITAL VETERINER') {
+            $id_company = '24';
         }
 
         // $price_sell = $this->priceSell($data["item"], $id_company);
