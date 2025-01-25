@@ -10,8 +10,8 @@ trait Eweb
     public function syncCustomerEweb($customer)
     {
         $id_branches = [];
-        if ($customer["id_branches"] == 'SGOS') {
-            $id_branches[] = '83';
+        if ($customer["id_branches"] == 'SATWAGIA OFFICIAL STORE') {
+            $id_branches[] = '44';
         }
 
         // Mengubah array menjadi string
@@ -68,11 +68,11 @@ trait Eweb
 
     public function addPos($data)
     {
-        $id_company = config('eweb.id_company_sgos', '83');
+        $id_company = config('eweb.id_company_sgos', '44');
         $idtipetrans = config('eweb.idtipetrans', 1781);
 
-        if ($data["id_company"] == 'SGOS') {
-            $id_company = '83';
+        if ($data["id_company"] == 'SATWAGIA OFFICIAL STORE') {
+            $id_company = '44';
         }
 
         // $price_sell = $this->priceSell($data["item"], $id_company);
