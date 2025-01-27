@@ -29,30 +29,24 @@ class ImportEwebController extends Controller
 
         // Mengambil data dari Excel
         $rows = Excel::toArray(new \App\Imports\OrderImport, $file)[0];
-        $validRows = []; // Untuk menyimpan baris valid
 
-        foreach ($rows as $index => $value) {
-            // Lewati header (misalnya baris pertama atau baris dengan "No")
-            if ($index === 0 || strtolower($value[0]) === 'no') {
-                continue;
-            }
-
-            // Lewati baris null atau kosong
-            if (empty(array_filter($value))) {
-                continue;
-            }
-
-            // Tambahkan baris valid ke array
-            $validRows[] = $value;
-        }
-
-        $totalRows = count($validRows); // Hitung total baris valid
-
-        // Bagi data ke dalam chunk
+        // Bagi data ke dalam chunk dan proses langsung
         $chunkSize = 100; // Jumlah baris per job
-        foreach (array_chunk($validRows, $chunkSize) as $batchIndex => $chunk) {
-            // Dispatch job untuk memproses setiap chunk
-            ImportEwebJob::dispatch($chunk, $totalRows, $batchIndex);
+        $totalRows = 0;
+
+        foreach (array_chunk($rows, $chunkSize) as $batchIndex => $chunk) {
+            $validRows = array_filter($chunk, function ($row, $index) use ($batchIndex) {
+                // Lewati header dan baris kosong
+                return $index !== 0 || strtolower($row[0]) !== 'no' && !empty(array_filter($row));
+            }, ARRAY_FILTER_USE_BOTH);
+
+            // Hitung total baris valid
+            $totalRows += count($validRows);
+
+            // Dispatch job untuk setiap chunk
+            if (!empty($validRows)) {
+                ImportEwebJob::dispatch($validRows, $totalRows, $batchIndex);
+            }
         }
 
         return back()->with('success', 'Proses impor sedang berjalan. Anda dapat memantau progres.');
