@@ -3,6 +3,8 @@
 namespace App\Http\Traits;
 
 use App\Models\Customer;
+use App\Models\Order;
+use App\Models\OrderDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -15,8 +17,10 @@ trait Eweb
             $id_branches[] = '44';
         } elseif (strcasecmp($customer["id_branches"], 'PT TEKNOLOGI DIGITAL VETERINER') == 0) {
             $id_branches[] = '24';
+        } elseif (strcasecmp($customer["id_branches"], 'SATWAGIA OFFICIAL STORE SANDBOX') == 0) {
+            $id_branches[] = '83';
         } else {
-            $id_company = '83';
+            $id_branches[] = '83';
 
             throw new \Exception('Branches not found');
         }
@@ -37,40 +41,9 @@ trait Eweb
             'id_branches'           => $id_brances
         );
 
-        $data_json = http_build_query($arr_data);
+        $response = $this->curl_post('sync-customer', $arr_data);
 
-        $url = config('eweb.base_url') . '/sync-customer';
-        $url .= '?username=' . config('eweb.username') . '&apikey=' . config('eweb.api_key');
-
-        $curl = curl_init($url);
-
-        curl_setopt_array($curl, array(
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => $data_json,
-            CURLOPT_HTTPHEADER => array(
-                "cache-control: no-cache"
-            ),
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_SSL_VERIFYPEER => false,
-        ));
-
-        $response_raw = curl_exec($curl);
-        $err = curl_error($curl);
-
-        curl_close($curl);
-
-        dd($response_raw);
-
-        if ($err) {
-            return false;
-        } else {
-            $response = json_decode($response_raw, TRUE);
-
+        if ($response['status'] == true) {
             $customer_result = Customer::updateOrCreate([
                 'nickname' => $customer["nickname"],
             ], $arr_data);
@@ -86,8 +59,10 @@ trait Eweb
 
         if (strcasecmp($data["id_company"], 'SATWAGIA OFFICIAL STORE') == 0) {
             $id_company = '44';
-        } elseif (strcasecmp($data["id_branches"], 'PT TEKNOLOGI DIGITAL VETERINER') == 0) {
+        } elseif (strcasecmp($data["id_company"], 'PT TEKNOLOGI DIGITAL VETERINER') == 0) {
             $id_company = '24';
+        } elseif (strcasecmp($data["id_company"], 'SATWAGIA OFFICIAL STORE SANDBOX') == 0) {
+            $id_company = '83';
         } else {
             $id_company = '83';
 
@@ -122,45 +97,70 @@ trait Eweb
             'catatan'           => $data['catatan'],
         );
 
-        return $this->curl_post('add-pos', $arr_data);
+        $response = $this->curl_post('add-pos', $arr_data);
+
+        if ($response['status'] == true) {
+            $order = Order::updateOrCreate([
+                'no_transaksi' => $arr_data["no_sinv"],
+            ], [
+                'no_transaksi' => $arr_data["no_sinv"],
+                'customer_id' => $arr_data["id_customer"],
+                'total' => $data["total"],
+            ]);
+
+            foreach ($arr_detail as $value) {
+                OrderDetail::updateOrCreate([
+                    'order_id' => $order->id,
+                ], [
+                    'order_id' => $order->id,
+                    'kode_item' => $value["kode_original_inv"],
+                    'qty' => $value['cqty'],
+                    'harga' => $value['harga_satuan'],
+                ]);
+            }
+
+            return true;
+        }
+
+        return $response['status'];
     }
 
-    public function curl_post($action_url, $payloads = [])
+    function curl_post($action_url, $payloads = [])
     {
         $url = config('eweb.base_url') . '/' . $action_url;
         $url .= '?username=' . config('eweb.username') . '&apikey=' . config('eweb.api_key');
 
         $data_json = http_build_query($payloads);
+        $curl = curl_init($url);
 
-        try {
-            $curl = curl_init($url);
+        curl_setopt_array($curl, array(
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $data_json,
+            CURLOPT_HTTPHEADER => array(
+                "cache-control: no-cache"
+            ),
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_SSL_VERIFYPEER => false,
+        ));
 
-            curl_setopt_array($curl, [
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => $data_json,
-                CURLOPT_HTTPHEADER => ["cache-control: no-cache"],
-                CURLOPT_SSL_VERIFYHOST => false,
-                CURLOPT_SSL_VERIFYPEER => false,
-            ]);
+        $response_raw = curl_exec($curl);
+        $err = curl_error($curl);
 
-            $response_raw = curl_exec($curl);
+        curl_close($curl);
 
-            if (curl_errno($curl)) {
-                throw new \Exception(curl_error($curl));
-            }
-
-            curl_close($curl);
-            $response = json_decode($response_raw, true);
-
-            if (!$response) {
-                throw new \Exception('Invalid JSON response');
-            }
-
-            return $response;
-        } catch (\Exception $e) {
-            return ['error' => $e->getMessage()];
+        if ($err) {
+            $result = $err;
+        } else {
+            $response = json_decode($response_raw, TRUE);
+            $result = $response;
         }
+
+        return $result;
     }
 
     function dateformat_short($date)

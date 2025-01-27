@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Back;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\Eweb;
 use App\Imports\OrderImport;
 use App\Jobs\ImportEwebJob;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ImportEwebController extends Controller
 {
+    use Eweb;
+
     public function index()
     {
         return view('back.import-eweb.index');
