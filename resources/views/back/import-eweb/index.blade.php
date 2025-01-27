@@ -16,7 +16,7 @@
                         </div>
                         <div class="mb-4">
                             <label for="pos_excel" class="form-label">File Excel</label>
-                            <input type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="form-control @error('pos_excel') is-invalid @enderror" id="pos_excel" name="pos_excel"/>
+                            <input type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  class="form-control @error('pos_excel') is-invalid @enderror" id="pos_excel" name="pos_excel"/>
                             @error('pos_excel')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>

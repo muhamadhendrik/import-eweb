@@ -118,11 +118,9 @@ trait Eweb
                     'harga' => $value['harga_satuan'],
                 ]);
             }
-
-            return true;
         }
 
-        return $response['status'];
+        return $response;
     }
 
     function curl_post($action_url, $payloads = [])

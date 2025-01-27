@@ -22,26 +22,37 @@ class ImportEwebController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'pos_excel' => 'required|file',
+            'pos_excel' => 'required|file|mimetypes:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
 
         $file = $request->file('pos_excel');
 
-        $totalRows = 0;
+        // Mengambil data dari Excel
         $rows = Excel::toArray(new \App\Imports\OrderImport, $file)[0];
-        foreach ($rows as $value) {
-            if ($value[0] != 'No') {
-                if ($value[0] != null) {
-                    $totalRows++;
-                }
+        $validRows = []; // Untuk menyimpan baris valid
+
+        foreach ($rows as $index => $value) {
+            // Lewati header (misalnya baris pertama atau baris dengan "No")
+            if ($index === 0 || strtolower($value[0]) === 'no') {
+                continue;
             }
+
+            // Lewati baris null atau kosong
+            if (empty(array_filter($value))) {
+                continue;
+            }
+
+            // Tambahkan baris valid ke array
+            $validRows[] = $value;
         }
 
-        $chunkSize = 100; // Jumlah baris per job
-        $batchIndex = 0;
+        $totalRows = count($validRows); // Hitung total baris valid
 
-        foreach (array_chunk($rows, $chunkSize) as $chunk) {
-            ImportEwebJob::dispatch($chunk, $totalRows, $batchIndex++);
+        // Bagi data ke dalam chunk
+        $chunkSize = 100; // Jumlah baris per job
+        foreach (array_chunk($validRows, $chunkSize) as $batchIndex => $chunk) {
+            // Dispatch job untuk memproses setiap chunk
+            ImportEwebJob::dispatch($chunk, $totalRows, $batchIndex);
         }
 
         return back()->with('success', 'Proses impor sedang berjalan. Anda dapat memantau progres.');

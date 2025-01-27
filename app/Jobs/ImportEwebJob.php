@@ -66,8 +66,8 @@ class ImportEwebJob implements ShouldQueue
 
                 $addPosResult = $this->addPos($posData);
 
-                if (isset($addPosResult['error'])) {
-                    throw new \Exception('POS Error: ' . $addPosResult['error']);
+                if (isset($addPosResult['status']) && $addPosResult['status'] !== true) {
+                    throw new \Exception('POS status: ' . $addPosResult['status'] . ' MESSAGE: ' . $addPosResult['message']);
                 }
 
             } catch (\Exception $e) {
