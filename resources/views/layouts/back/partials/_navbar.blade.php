@@ -135,8 +135,7 @@
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar">
-                                            <img src="{{ asset('back/assets') }}/img/avatars/2.png" alt
-                                                class="rounded-circle" />
+                                            <img src="" alt class="rounded-circle" />
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
