@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 trait Eweb
 {
@@ -48,8 +49,13 @@ trait Eweb
                 'nickname' => $customer["nickname"],
             ], $arr_data);
 
+            Log::info('Sync Customer: ' . $customer["nickname"]);
+
             return $response['id_customer'];
         }
+
+        Log::error('Sync Customer Error: ' . $response['message']);
+        return $response;
     }
 
     public function addPos($data)
