@@ -24,11 +24,9 @@
         $permission_option	= $menu_admin->permission_option;
 
         $arr_menu_admin_name = explode('>', $menu_admin_name);
-        // dd($menu_admin_name);
         $arr_menu_admin_name = array_map('trim', $arr_menu_admin_name);
 
         $jumlah_submenu = count($arr_menu_admin_name);
-        // dd($arr_menu_admin_name);
 
         if($permission_key == "")
         {

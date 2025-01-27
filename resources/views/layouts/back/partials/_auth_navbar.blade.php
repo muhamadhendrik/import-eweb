@@ -30,7 +30,7 @@
             </a>
         </li>
         <li>
-            <a class="dropdown-item" href="#" onclick="alert('Belum jadi hehe')">
+            <a class="dropdown-item" href="pages-faq.html">
                 <i class="ti ti-question-mark me-3 ti-md"></i><span class="align-middle">FAQ</span>
             </a>
         </li>

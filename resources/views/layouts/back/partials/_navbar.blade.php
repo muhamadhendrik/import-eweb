@@ -15,7 +15,7 @@
                 <small class="text-dark fw-bold">{{ Str::limit(Auth::user()->name, 10) }}</small>
             </div>
             <div class="nav-item">
-                <small class="text-body">Role - </small>
+                <small class="text-body">Role -</small>
                 <small class="text-dark fw-bold">{{ Str::limit(Auth::user()->roles()->first()->name, 10) }}</small>
             </div>
         </div>
@@ -29,7 +29,7 @@
             </div>
 
             <div class="nav-item">
-                <span class="text-muted">Role - </span>
+                <span class="text-muted">Role -</span>
                 <span class="text-dark fw-bold">{{ Str::ucfirst(Auth::user()->roles()->first()->name) }}</span>
             </div>
         </div>
