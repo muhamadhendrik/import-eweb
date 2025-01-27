@@ -24,9 +24,9 @@
                             @enderror
                         </div>
                         <div class="progress">
-                            <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div id="progress-bar-import" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
-                        <p id="progress-text">0% completed</p>
+                        <p id="progress-bar-import-text">0% completed</p>
                     </div>
                     <div class="col-12 d-flex justify-content-between">
                         <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ route('dashboard') }}'">Cancel</button>
