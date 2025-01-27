@@ -13,11 +13,3 @@ window.Echo = new Echo({
     forceTLS: import.meta.env.VITE_PUSHER_SCHEME === 'https', // menggunakan TLS
     enabledTransports: ['ws', 'wss'], // untuk koneksi WebSocket
 });
-
-window.Echo.channel("import-progress").listen("ImportProgressUpdated", (e) => {
-    const progressBar = document.getElementById("progress-bar-import");
-    const progressText = document.getElementById("progress-bar-import-text");
-
-    progressBar.style.width = e.progress + "%";
-    progressText.innerText = e.progress + "% completed";
-});
