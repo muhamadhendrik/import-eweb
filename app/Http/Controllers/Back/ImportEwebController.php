@@ -22,10 +22,18 @@ class ImportEwebController extends Controller
         ]);
 
         $file = $request->file('pos_excel');
+
+        $totalRows = 0;
         $rows = Excel::toArray(new \App\Imports\OrderImport, $file)[0];
+        foreach ($rows as $value) {
+            if ($value[0] != 'No') {
+                if ($value[0] != null) {
+                    $totalRows++;
+                }
+            }
+        }
 
         $chunkSize = 100; // Jumlah baris per job
-        $totalRows = count($rows);
         $batchIndex = 0;
 
         foreach (array_chunk($rows, $chunkSize) as $chunk) {
