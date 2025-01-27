@@ -13,7 +13,8 @@
 
     @include('layouts.back.partials._head')
 
-    @vite(['resources/js/app.js'])
+    @vite(['resources/js/bootstrap.js'])
+
 
     @stack('styles')
 </head>

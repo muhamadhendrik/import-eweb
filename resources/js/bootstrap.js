@@ -1,30 +1,15 @@
-import "bootstrap";
-import axios from "axios";
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
+import 'bootstrap';
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
 
-window.axios = axios;
-window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
-
+// Menetapkan Pusher ke window
 window.Pusher = Pusher;
 
+// Inisialisasi Echo
 window.Echo = new Echo({
     broadcaster: 'pusher',
-    key: import.meta.env.VITE_PUSHER_APP_KEY, // key
-    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER, // cluster
-    forceTLS: import.meta.env.VITE_PUSHER_SCHEME === 'https', // HTTPS
-    enabledTransports: ['ws', 'wss'],
-});
-
-Echo.channel("import-progress").listen("ImportProgressUpdated", (e) => {
-    console.log("Event received:", e);
-    const progressBar = document.getElementById("progress-bar");
-    const progressText = document.getElementById("progress-text");
-
-    if (progressBar && progressText) {
-        progressBar.style.width = `${e.progress}%`;
-        progressText.innerText = `${e.progress}% completed`;
-    } else {
-        console.error("Progress bar elements not found in DOM.");
-    }
+    key: import.meta.env.VITE_PUSHER_APP_KEY, // key Pusher dari Vite
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER, // cluster Pusher dari Vite
+    forceTLS: import.meta.env.VITE_PUSHER_SCHEME === 'https', // menggunakan TLS
+    enabledTransports: ['ws', 'wss'], // untuk koneksi WebSocket
 });

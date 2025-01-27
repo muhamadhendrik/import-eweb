@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use App\Models\Customer;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -10,10 +11,14 @@ trait Eweb
     public function syncCustomerEweb($customer)
     {
         $id_branches = [];
-        if ($customer["id_branches"] == 'SATWAGIA OFFICIAL STORE') {
+        if (strcasecmp($customer["id_branches"], 'SATWAGIA OFFICIAL STORE') == 0) {
             $id_branches[] = '44';
-        }elseif ($customer["id_branches"] == 'PT TEKNOLOGI DIGITAL VETERINER') {
+        } elseif (strcasecmp($customer["id_branches"], 'PT TEKNOLOGI DIGITAL VETERINER') == 0) {
             $id_branches[] = '24';
+        } else {
+            $id_company = '83';
+
+            throw new \Exception('Branches not found');
         }
 
         // Mengubah array menjadi string
@@ -59,24 +64,34 @@ trait Eweb
 
         curl_close($curl);
 
+        dd($response_raw);
 
         if ($err) {
             return false;
         } else {
             $response = json_decode($response_raw, TRUE);
+
+            $customer_result = Customer::updateOrCreate([
+                'nickname' => $customer["nickname"],
+            ], $arr_data);
+
             return $response['id_customer'];
         }
     }
 
     public function addPos($data)
     {
-        $id_company = config('eweb.id_company_sgos', '44');
+        $id_company = config('eweb.id_company_sgos', '83');
         $idtipetrans = config('eweb.idtipetrans', 1781);
 
-        if ($data["id_company"] == 'SATWAGIA OFFICIAL STORE') {
+        if (strcasecmp($data["id_company"], 'SATWAGIA OFFICIAL STORE') == 0) {
             $id_company = '44';
-        }elseif ($data["id_branches"] == 'PT TEKNOLOGI DIGITAL VETERINER') {
+        } elseif (strcasecmp($data["id_branches"], 'PT TEKNOLOGI DIGITAL VETERINER') == 0) {
             $id_company = '24';
+        } else {
+            $id_company = '83';
+
+            throw new \Exception('Branches not found');
         }
 
         // $price_sell = $this->priceSell($data["item"], $id_company);
@@ -106,7 +121,6 @@ trait Eweb
             'detail'            => $arr_detail,
             'catatan'           => $data['catatan'],
         );
-
 
         return $this->curl_post('add-pos', $arr_data);
     }

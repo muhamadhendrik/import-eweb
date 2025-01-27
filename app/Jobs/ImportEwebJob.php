@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Http\Traits\Eweb;
+use App\Models\Customer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -68,6 +69,7 @@ class ImportEwebJob implements ShouldQueue
                 if (isset($addPosResult['error'])) {
                     throw new \Exception('POS Error: ' . $addPosResult['error']);
                 }
+
             } catch (\Exception $e) {
                 Log::error('ImportEwebJob Error: ' . $e->getMessage());
             }
