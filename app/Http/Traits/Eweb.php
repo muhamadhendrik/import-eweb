@@ -43,8 +43,8 @@ trait Eweb
         );
 
         $response = $this->curl_post('sync-customer', $arr_data);
-
         if ($response['status'] == true) {
+            $arr_data['id_customer'] = $response['id_customer'];
             $customer_result = Customer::updateOrCreate([
                 'nickname' => $customer["nickname"],
             ], $arr_data);
@@ -52,10 +52,11 @@ trait Eweb
             Log::info('Sync Customer: ' . $customer["nickname"]);
 
             return $response['id_customer'];
+        }else {
+            $customer = Customer::where('nickname', $customer["nickname"])->first();
+            Log::error('Sync Customer Error: ' . $response['message']);
+            return $customer->id_customer;
         }
-
-        Log::error('Sync Customer Error: ' . $response['message']);
-        return $response;
     }
 
     public function addPos($data)
@@ -76,15 +77,20 @@ trait Eweb
             // Throw new \Exception('Branches add pos not found');
         }
 
-        $total_pembagi = $data['total'] / $data['qty'];
-        $diskon = $data['harga_satuan'] - $total_pembagi;
+        $total = 0;
+        foreach ($data['arr_detail'] as $detail) {
+            $total_pembagi = $detail['total'] / $detail['qty'];
+            $diskon = $detail['harga_satuan'] - $total_pembagi;
 
-        $arr_detail[] = array(
-            'kode_original_inv' => $data['item'],
-            'cqty'              => $data['qty'],
-            'harga_satuan'      => $data['harga_satuan'],
-            'discount_item'     => $diskon,
-        );
+            $arr_detail[] = array(
+                'kode_original_inv' => $detail['item'],
+                'cqty'              => $detail['qty'],
+                'harga_satuan'      => $detail['harga_satuan'],
+                'discount_item'     => $diskon,
+            );
+
+            $total += $detail['total'];
+        }
 
         $date_sinv = $this->dateformat_short($data['date_sinv']);
 
@@ -96,8 +102,8 @@ trait Eweb
             'no_sinv'           => $data['no_sinv'],
             'date_sinv'         => $date_sinv,
             'idtipetrans'       => $idtipetrans,
-            'detail'            => $arr_detail,
             'catatan'           => $data['catatan'],
+            'detail'            => $arr_detail
         );
 
         $response = $this->curl_post('add-pos', $arr_data);

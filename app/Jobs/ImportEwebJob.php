@@ -29,40 +29,52 @@ class ImportEwebJob implements ShouldQueue
     public function handle()
     {
         $processed = 0;
-        foreach ($this->rows as $row) {
-            if ($row[0] === 'No') {
+        foreach ($this->rows as $roder) {
+            if ($roder[0] === 'No') {
                 continue;
             }
 
             try {
+                // Validasi data
+                if (!isset($order['no_transaksi'], $order['order_detail'])) {
+                    continue;
+                }
+
+                // Sinkronisasi data customer
                 $customer = [
-                    'nama' => $row[6],
-                    'nickname' => $row[6],
-                    'alamat' => $row[7],
-                    'kota' => $row[8],
-                    'kode_pos' => $row[9],
-                    'hp' => $row[10],
-                    'id_branches' => $row[2],
+                    'nama' => $order['nama'],
+                    'nickname' => $order['nama'],
+                    'alamat' => $order['alamat'],
+                    'kota' => $order['kota'],
+                    'kode_pos' => $order['kode_pos'],
+                    'hp' => $order['no_telp'],
+                    'id_branches' => $order['outlet'],
                 ];
 
                 $customerId = $this->syncCustomerEweb($customer);
 
                 if (!$customerId) {
                     Log::error('ImportEwebJob Error: Customer ID not found');
-                    // Throw new \Exception('Customer ID not found');
+                }
+
+                // Tambahkan data transaksi POS
+                foreach ($order['order_detail'] as $detail) {
+                    $arr_order_detail[] = [
+                        'item' => $detail['kode_item'],
+                        'qty' => $detail['qty'],
+                        'harga_satuan' => $detail['harga_satuan'],
+                        'total' => $detail['total'],
+                    ];
                 }
 
                 $posData = [
-                    'id_company' => $row[2],
+                    'id_company' => $order['outlet'],
                     'id_customer' => $customerId,
-                    'id_employee' => $row[3],
-                    'no_sinv' => $row[5],
-                    'date_sinv' => $row[1],
-                    'catatan' => $row[4],
-                    'item' => $row[11],
-                    'qty' => $row[12],
-                    'harga_satuan' => $row[13],
-                    'total' => $row[14],
+                    'id_employee' => $order['salesman'],
+                    'no_sinv' => $order['no_transaksi'],
+                    'date_sinv' => $order['tanggal'],
+                    'catatan' => $order['notes'],
+                    'arr_detail' => $arr_order_detail
                 ];
 
                 $addPosResult = $this->addPos($posData);
@@ -70,7 +82,7 @@ class ImportEwebJob implements ShouldQueue
                 if (isset($addPosResult['status']) && $addPosResult['status'] !== true) {
                     Log::error('ImportEwebJob Error: ' . $addPosResult['message']);
                 }
-
+                // Update progress event
             } catch (\Exception $e) {
                 Log::error('ImportEwebJob Error: ' . $e->getMessage());
                 Throw new \Exception($e->getMessage());

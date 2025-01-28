@@ -30,33 +30,57 @@ class ImportEwebController extends Controller
         // Mengambil data dari Excel
         $rows = Excel::toArray(new \App\Imports\OrderImport, $file)[0];
 
-        // Bagi data ke dalam chunk dan proses langsung
-        $chunkSize = 100; // Jumlah baris per job
-        $totalRows = 0;
+        $arr_order = [];
 
-        foreach (array_chunk($rows, $chunkSize) as $batchIndex => $chunk) {
-            $validRows = array_filter($chunk, function ($row, $index) use ($batchIndex) {
-                // Periksa apakah baris kosong atau tidak valid
-                if ($index === 0 && strtolower($row[0] ?? '') === 'no') {
-                    return false; // Lewati header
-                }
-
-                // Pastikan kolom 1 (indeks 1) tidak null atau kosong
-                if (empty($row[1])) {
-                    return false; // Lewati baris dengan kolom 1 kosong
-                }
-
-                return true; // Baris valid
-            }, ARRAY_FILTER_USE_BOTH);
-
-            // Hitung total baris valid
-            $totalRows += count($validRows);
-
-            // Dispatch job untuk setiap chunk dengan delay
-            if (!empty($validRows)) {
-                ImportEwebJob::dispatch($validRows, $totalRows, $batchIndex)
-                    ->delay(now()->addSeconds($batchIndex + 1));
+        foreach ($rows as $index => $row) {
+            // Lewati header
+            if ($index === 0 && strtolower($row[0] ?? '') === 'no') {
+                continue;
             }
+
+            // Lewati baris yang tidak memiliki nomor transaksi
+            if (empty($row[5])) {
+                continue;
+            }
+
+            $no_transaksi = $row[5];
+
+            // Jika nomor transaksi sudah ada, tambahkan item ke dalam order_detail
+            if (isset($arr_order[$no_transaksi])) {
+                $arr_order[$no_transaksi]['order_detail'][] = [
+                    'kode_item' => $row[11],
+                    'qty' => $row[12],
+                    'harga_satuan' => $row[13],
+                    'total' => $row[14],
+                ];
+            } else {
+                // Jika nomor transaksi belum ada, tambahkan order baru
+                $arr_order[$no_transaksi] = [
+                    'tanggal' => $row[1],
+                    'outlet' => $row[2],
+                    'salesman' => $row[3],
+                    'notes' => $row[4],
+                    'no_transaksi' => $row[5],
+                    'nama' => $row[6],
+                    'alamat' => $row[7],
+                    'kota' => $row[8],
+                    'kode_pos' => $row[9],
+                    'no_telp' => $row[10],
+                    'order_detail' => [
+                        [
+                            'kode_item' => $row[11],
+                            'qty' => $row[12],
+                            'harga_satuan' => $row[13],
+                            'total' => $row[14],
+                        ],
+                    ],
+                ];
+            }
+        }
+
+        // Dispatch job untuk setiap order
+        foreach ($arr_order as $order) {
+            ImportEwebJob::dispatch($order)->delay(now()->addSeconds(1));
         }
 
         return back()->with('success', 'Proses impor sedang berjalan. Anda dapat memantau progres.');
