@@ -55,6 +55,7 @@ class ImportEwebJob implements ShouldQueue
 
                 if (!$customerId) {
                     Log::error('ImportEwebJob Error: Customer ID not found');
+                    throw new \Exception('Customer ID not found');
                 }
 
                 // Tambahkan data transaksi POS
