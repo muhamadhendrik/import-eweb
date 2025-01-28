@@ -37,7 +37,6 @@ class ImportEwebController extends Controller
         foreach (array_chunk($rows, $chunkSize) as $batchIndex => $chunk) {
             $validRows = array_filter($chunk, function ($row, $index) use ($batchIndex) {
                 // Periksa apakah baris kosong atau tidak valid
-                // Lewati header (baris pertama, biasanya $index === 0) atau baris yang elemen indeks 1-nya kosong/null
                 if ($index === 0 && strtolower($row[0] ?? '') === 'no') {
                     return false; // Lewati header
                 }
@@ -53,9 +52,10 @@ class ImportEwebController extends Controller
             // Hitung total baris valid
             $totalRows += count($validRows);
 
-            // Dispatch job untuk setiap chunk
+            // Dispatch job untuk setiap chunk dengan delay
             if (!empty($validRows)) {
-                ImportEwebJob::dispatch($validRows, $totalRows, $batchIndex);
+                ImportEwebJob::dispatch($validRows, $totalRows, $batchIndex)
+                    ->delay(now()->addSeconds($batchIndex + 1));
             }
         }
 
