@@ -12,8 +12,6 @@
     <meta name="description" content="" />
 
     @include('layouts.back.partials._head')
-
-    @vite(['resources/js/bootstrap.js'])
     @stack('styles')
 </head>
 

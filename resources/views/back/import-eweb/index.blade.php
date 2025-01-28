@@ -36,6 +36,8 @@
             </div>
         </div>
     </div>
-
 </div>
 @stop
+@push('scripts')
+    @vite(['resources/js/bootstrap.js'])
+@endpush
