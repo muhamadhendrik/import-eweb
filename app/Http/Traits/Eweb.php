@@ -6,7 +6,6 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 trait Eweb
@@ -23,7 +22,8 @@ trait Eweb
         } else {
             $id_branches[] = '83';
 
-            throw new \Exception('Branches not found');
+            Log::error('Branches sync customer not found');
+            Throw new \Exception('Branches sync customer not found');
         }
 
         // Mengubah array menjadi string
@@ -72,15 +72,12 @@ trait Eweb
         } else {
             $id_company = '83';
 
-            throw new \Exception('Branches not found');
+            Log::error('Branches add pos not found');
+            // Throw new \Exception('Branches add pos not found');
         }
 
-        // $price_sell = $this->priceSell($data["item"], $id_company);
         $total_pembagi = $data['total'] / $data['qty'];
         $diskon = $data['harga_satuan'] - $total_pembagi;
-        // $diskon =  ($data['harga_satuan'] * 2) - $nominal_total_diskon;
-        // $diskon = $diskon / $data['qty'];
-        // $sub_total = $data['harga_satuan'] * $data['qty'];
 
         $arr_detail[] = array(
             'kode_original_inv' => $data['item'],
@@ -110,6 +107,7 @@ trait Eweb
                 'no_transaksi' => $arr_data["no_sinv"],
             ], [
                 'no_transaksi' => $arr_data["no_sinv"],
+                'tanggal' => $arr_data["date_sinv"],
                 'customer_id' => $arr_data["id_customer"],
                 'total' => $data["total"],
             ]);

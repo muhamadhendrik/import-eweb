@@ -47,9 +47,10 @@ class ImportEwebJob implements ShouldQueue
 
                 $customerId = $this->syncCustomerEweb($customer);
 
-                // if (!$customerId) {
-                //     Log::error('ImportEwebJob Error: Customer ID not found');
-                // }
+                if (!$customerId) {
+                    Log::error('ImportEwebJob Error: Customer ID not found');
+                    // Throw new \Exception('Customer ID not found');
+                }
 
                 $posData = [
                     'id_company' => $row[2],
@@ -68,15 +69,22 @@ class ImportEwebJob implements ShouldQueue
 
                 if (isset($addPosResult['status']) && $addPosResult['status'] !== true) {
                     Log::error('ImportEwebJob Error: ' . $addPosResult['message']);
-                    // throw new \Exception('POS status: ' . $addPosResult['status'] . ' MESSAGE: ' . $addPosResult['message']);
                 }
 
             } catch (\Exception $e) {
                 Log::error('ImportEwebJob Error: ' . $e->getMessage());
+                Throw new \Exception($e->getMessage());
             }
 
             $processed++;
             $progress = round((($this->batchIndex * count($this->rows) + $processed) / $this->totalRows) * 100);
+
+            Log::info('Processing row', [
+                'rowIndex' => $processed,
+                'batchIndex' => $this->batchIndex,
+                'progress' => $progress . '%',
+            ]);
+
             event(new \App\Events\ImportProgressUpdated($progress));
         }
     }

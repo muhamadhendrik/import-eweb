@@ -36,8 +36,18 @@ class ImportEwebController extends Controller
 
         foreach (array_chunk($rows, $chunkSize) as $batchIndex => $chunk) {
             $validRows = array_filter($chunk, function ($row, $index) use ($batchIndex) {
-                // Lewati header dan baris kosong
-                return $index !== 0 || strtolower($row[0]) !== 'no' && !empty(array_filter($row));
+                // Periksa apakah baris kosong atau tidak valid
+                // Lewati header (baris pertama, biasanya $index === 0) atau baris yang elemen indeks 1-nya kosong/null
+                if ($index === 0 && strtolower($row[0] ?? '') === 'no') {
+                    return false; // Lewati header
+                }
+
+                // Pastikan kolom 1 (indeks 1) tidak null atau kosong
+                if (empty($row[1])) {
+                    return false; // Lewati baris dengan kolom 1 kosong
+                }
+
+                return true; // Baris valid
             }, ARRAY_FILTER_USE_BOTH);
 
             // Hitung total baris valid
