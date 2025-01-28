@@ -20,14 +20,18 @@ const resetProgress = () => {
     const progressText = document.getElementById("progress-bar-import-text");
     const submitButton = document.getElementById("submit-button");
 
-    // Atur ulang progress bar dan teks
-    progressBar.style.width = "0%";
-    progressBar.setAttribute("aria-valuenow", "0");
-    progressText.innerText = "0% completed";
+    if (progressBar && progressText && submitButton) {
+        // Atur ulang progress bar dan teks
+        progressBar.style.width = "0%";
+        progressBar.setAttribute("aria-valuenow", "0");
+        progressText.innerText = "0% completed";
 
-    // Pastikan tombol aktif saat halaman dimuat
-    submitButton.disabled = false;
-    submitButton.innerText = "Submit";
+        // Pastikan tombol aktif saat halaman dimuat
+        submitButton.disabled = false;
+        submitButton.innerText = "Submit";
+    } else {
+        console.error("Element progress bar atau tombol tidak ditemukan.");
+    }
 };
 
 // Reset progress saat halaman pertama kali dibuka
@@ -38,30 +42,34 @@ window.Echo.channel("import-progress").listen("ImportProgressUpdated", (e) => {
     const progressText = document.getElementById("progress-bar-import-text");
     const submitButton = document.getElementById("submit-button");
 
-    // Update progress bar dan teks
-    progressBar.style.width = e.progress + "%";
-    progressBar.setAttribute("aria-valuenow", e.progress);
-    progressText.innerText = e.progress + "% completed";
+    if (progressBar && progressText && submitButton) {
+        // Update progress bar dan teks
+        progressBar.style.width = e.progress + "%";
+        progressBar.setAttribute("aria-valuenow", e.progress);
+        progressText.innerText = `${e.progress}% completed`;
 
-    // Nonaktifkan tombol selama proses berjalan
-    if (e.progress < 100) {
-        submitButton.disabled = true;
-        submitButton.innerText = "Mohon Tunggu...";
-    }
+        // Nonaktifkan tombol selama proses berjalan
+        if (e.progress < 100) {
+            submitButton.disabled = true;
+            submitButton.innerText = "Mohon Tunggu...";
+        }
 
-    // Jika progress mencapai 100%
-    if (e.progress === 100) {
-        submitButton.disabled = false; // Aktifkan tombol kembali
-        submitButton.innerText = "Submit"; // Ubah teks tombol
+        // Jika progress mencapai 100%
+        if (e.progress === 100) {
+            submitButton.disabled = false; // Aktifkan tombol kembali
+            submitButton.innerText = "Submit"; // Ubah teks tombol
 
-        // Tampilkan SweetAlert dengan durasi 5 detik
-        Swal.fire({
-            title: "Selesai!",
-            text: "Proses import selesai.",
-            icon: "success",
-            confirmButtonText: "OK",
-            timer: 5000, // Durasi alert dalam milidetik
-            timerProgressBar: true, // Menampilkan progress bar di dalam alert
-        });
+            // Tampilkan SweetAlert dengan durasi 5 detik
+            Swal.fire({
+                title: "Selesai!",
+                text: "Proses import selesai.",
+                icon: "success",
+                confirmButtonText: "OK",
+                timer: 5000, // Durasi alert dalam milidetik
+                timerProgressBar: true, // Menampilkan progress bar di dalam alert
+            });
+        }
+    } else {
+        console.error("Element progress bar atau tombol tidak ditemukan.");
     }
 });

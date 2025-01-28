@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use Carbon\Carbon;
+use DateTime;
 use Illuminate\Support\Facades\Log;
 
 trait Eweb
@@ -23,7 +24,7 @@ trait Eweb
             $id_branches[] = '83';
 
             Log::error('Branches sync customer not found');
-            Throw new \Exception('Branches sync customer not found');
+            throw new \Exception('Branches sync customer not found');
         }
 
         // Mengubah array menjadi string
@@ -52,7 +53,7 @@ trait Eweb
             Log::info('Sync Customer: ' . $customer["nickname"]);
 
             return $response['id_customer'];
-        }else {
+        } else {
             $customer = Customer::where('nickname', $customer["nickname"])->first();
             Log::error('Sync Customer Error: ' . $response['message']);
             return $customer->id_customer;
@@ -79,18 +80,36 @@ trait Eweb
 
         $total = 0;
         foreach ($data['arr_detail'] as $detail) {
+            // Pastikan qty dan total valid
+            if (!isset($detail['qty']) || !is_numeric($detail['qty']) || $detail['qty'] <= 0) {
+                Log::error("Invalid qty in order detail: " . json_encode($detail));
+                continue; // Skip ke detail berikutnya
+            }
+
+            if (!isset($detail['total']) || !is_numeric($detail['total'])) {
+                Log::error("Invalid total in order detail: " . json_encode($detail));
+                continue; // Skip ke detail berikutnya
+            }
+
             $total_pembagi = $detail['total'] / $detail['qty'];
             $diskon = $detail['harga_satuan'] - $total_pembagi;
+
+            $harga_satuan = $detail['harga_satuan'];
+            if ($diskon <= 0) {
+                $harga_satuan = $detail['total'];
+                $diskon = 0;
+            }
 
             $arr_detail[] = array(
                 'kode_original_inv' => $detail['item'],
                 'cqty'              => $detail['qty'],
-                'harga_satuan'      => $detail['harga_satuan'],
-                'discount_item'     => $diskon,
+                'harga_satuan'      => (float)$harga_satuan,
+                'discount_item'     => $diskon > 0 ? (float)$diskon : 0,
             );
 
             $total += $detail['total'];
         }
+
 
         $date_sinv = $this->dateformat_short($data['date_sinv']);
 
@@ -109,23 +128,26 @@ trait Eweb
         $response = $this->curl_post('add-pos', $arr_data);
 
         if ($response['status'] == true) {
+            // Pastikan total adalah float
+            $total = (float) $total;
+
             $order = Order::updateOrCreate([
                 'no_transaksi' => $arr_data["no_sinv"],
             ], [
                 'no_transaksi' => $arr_data["no_sinv"],
-                'tanggal' => $arr_data["date_sinv"],
+                'tanggal' => $this->convertToDatabaseDate($arr_data["date_sinv"]),
                 'customer_id' => $arr_data["id_customer"],
-                'total' => $data["total"],
+                'total' => $total,
             ]);
 
-            foreach ($arr_detail as $value) {
+
+            foreach ($arr_detail as $detail) {
                 OrderDetail::updateOrCreate([
+                    'kode_item' => $detail["kode_original_inv"],
                     'order_id' => $order->id,
                 ], [
-                    'order_id' => $order->id,
-                    'kode_item' => $value["kode_original_inv"],
-                    'qty' => $value['cqty'],
-                    'harga' => $value['harga_satuan'],
+                    'qty' => $detail['cqty'],
+                    'harga' => $detail['harga_satuan'],
                 ]);
             }
         }
@@ -198,6 +220,19 @@ trait Eweb
             return $formattedDate;
         } catch (\Exception $e) {
             return $e->getMessage();
+        }
+    }
+
+    function convertToDatabaseDate($dateString) {
+        // Pastikan format tanggal adalah DD-MM-YYYY
+        $dateObject = DateTime::createFromFormat('d-m-Y', $dateString);
+
+        if ($dateObject) {
+            // Ubah ke format YYYY-MM-DD
+            return $dateObject->format('Y-m-d');
+        } else {
+            // Return null jika format salah
+            return null;
         }
     }
 }

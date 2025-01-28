@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Http\Traits\Eweb;
-use App\Models\Customer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -15,13 +14,13 @@ class ImportEwebJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, Eweb;
 
-    protected $rows;
+    protected $orders;
     protected $totalRows;
     protected $batchIndex;
 
-    public function __construct($rows, $totalRows, $batchIndex)
+    public function __construct($orders, $totalRows, $batchIndex)
     {
-        $this->rows = $rows;
+        $this->orders = $orders;
         $this->totalRows = $totalRows;
         $this->batchIndex = $batchIndex;
     }
@@ -29,15 +28,16 @@ class ImportEwebJob implements ShouldQueue
     public function handle()
     {
         $processed = 0;
-        foreach ($this->rows as $roder) {
-            if ($roder[0] === 'No') {
-                continue;
-            }
 
+        foreach ($this->orders as $order) {
             try {
-                // Validasi data
-                if (!isset($order['no_transaksi'], $order['order_detail'])) {
-                    continue;
+                // Validasi data utama
+                if (empty($order['no_transaksi']) || empty($order['order_detail'])) {
+                    Log::warning('Order skipped due to missing transaction data', [
+                        'order' => $order,
+                    ]);
+
+                    throw new \Exception('Order skipped due to missing transaction data');
                 }
 
                 // Sinkronisasi data customer
@@ -54,17 +54,21 @@ class ImportEwebJob implements ShouldQueue
                 $customerId = $this->syncCustomerEweb($customer);
 
                 if (!$customerId) {
-                    Log::error('ImportEwebJob Error: Customer ID not found');
-                    throw new \Exception('Customer ID not found');
+                    Log::error('Customer synchronization failed', [
+                        'customer' => $customer,
+                    ]);
+
+                    throw new \Exception('Customer synchronization failed');
                 }
 
-                // Tambahkan data transaksi POS
+                // Proses data transaksi POS
+                $arr_order_detail = [];
                 foreach ($order['order_detail'] as $detail) {
                     $arr_order_detail[] = [
-                        'item' => $detail['kode_item'],
-                        'qty' => $detail['qty'],
-                        'harga_satuan' => $detail['harga_satuan'],
-                        'total' => $detail['total'],
+                        'item' => (string)$detail['kode_item'], // Pastikan string
+                        'qty' => (int)$detail['qty'],         // Pastikan integer
+                        'harga_satuan' => (float)$detail['harga_satuan'], // Pastikan float
+                        'total' => (float)$detail['total'],   // Pastikan float
                     ];
                 }
 
@@ -75,26 +79,30 @@ class ImportEwebJob implements ShouldQueue
                     'no_sinv' => $order['no_transaksi'],
                     'date_sinv' => $order['tanggal'],
                     'catatan' => $order['notes'],
-                    'arr_detail' => $arr_order_detail
+                    'arr_detail' => $arr_order_detail,
                 ];
 
                 $addPosResult = $this->addPos($posData);
 
                 if (isset($addPosResult['status']) && $addPosResult['status'] !== true) {
-                    Log::error('ImportEwebJob Error: ' . $addPosResult['message']);
+                    Log::error('Failed to add POS data', [
+                        'response' => $addPosResult,
+                        'posData' => $posData,
+                    ]);
                 }
-                // Update progress event
             } catch (\Exception $e) {
-                Log::error('ImportEwebJob Error: ' . $e->getMessage());
-                Throw new \Exception($e->getMessage());
+                Log::error('Error processing order', [
+                    'order' => $order,
+                    'error' => $e->getMessage(),
+                ]);
             }
 
             $processed++;
-            $progress = round((($this->batchIndex * count($this->rows) + $processed) / $this->totalRows) * 100);
 
-            Log::info('Processing row', [
-                'rowIndex' => $processed,
+            $progress = round((($this->batchIndex * count($this->orders) + $processed) / $this->totalRows) * 100);
+            Log::info('Progress updated', [
                 'batchIndex' => $this->batchIndex,
+                'processed' => $processed,
                 'progress' => $progress . '%',
             ]);
 
