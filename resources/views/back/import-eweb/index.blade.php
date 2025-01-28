@@ -16,7 +16,7 @@
                         </div>
                         <div class="mb-4">
                             <label for="pos_excel" class="form-label">File Excel</label>
-                            <input type="file" accept=".xlsx"  class="form-control @error('pos_excel') is-invalid @enderror" id="pos_excel" name="pos_excel"/>
+                            <input type="file" accept=".xlsx" class="form-control @error('pos_excel') is-invalid @enderror" id="pos_excel" name="pos_excel" />
                             @error('pos_excel')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -30,7 +30,7 @@
                     </div>
                     <div class="col-12 d-flex justify-content-between">
                         <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ route('dashboard') }}'">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button id="submit-button" type="submit" class="btn btn-primary">Submit</button>
                     </div>
                 </form>
             </div>
@@ -40,4 +40,5 @@
 @stop
 @push('scripts')
     @vite(['resources/js/bootstrap.js'])
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endpush
