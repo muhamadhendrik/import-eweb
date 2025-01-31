@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('kode_item')->nullable();
             $table->string('order_id')->nullable();
             $table->string('qty')->nullable();
-            $table->string('harga')->nullable();
+            $table->double('harga')->nullable();
             $table->timestamps();
         });
     }

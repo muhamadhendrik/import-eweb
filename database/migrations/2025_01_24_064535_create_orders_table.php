@@ -16,7 +16,7 @@ return new class extends Migration
             $table->date('tanggal')->nullable();
             $table->string('no_transaksi')->nullable();
             $table->string('customer_id')->nullable();
-            $table->string('total')->nullable();
+            $table->double('total')->nullable();
             $table->timestamps();
         });
     }
