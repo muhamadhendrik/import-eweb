@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use Carbon\Carbon;
 use DateTime;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 trait Eweb
@@ -138,6 +139,7 @@ trait Eweb
                 'tanggal' => $this->convertToDatabaseDate($arr_data["date_sinv"]),
                 'customer_id' => $arr_data["id_customer"],
                 'total' => $total,
+                'created_by' => Auth::user()->name
             ]);
 
 
