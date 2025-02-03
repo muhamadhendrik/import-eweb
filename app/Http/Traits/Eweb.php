@@ -112,7 +112,7 @@ trait Eweb
         }
 
 
-        $date_sinv = $this->dateformat_short($data['date_sinv']);
+        $date_sinv = $this->dateformat_short(strtolower($data['date_sinv']));
 
         $arr_data = array(
             'id_company'        => $id_company,
@@ -199,18 +199,18 @@ trait Eweb
     {
         // Map bulan Indonesia ke bahasa Inggris
         $bulanIndonesia = [
-            'Januari' => 'January',
-            'Februari' => 'February',
-            'Maret' => 'March',
-            'April' => 'April',
-            'Mei' => 'May',
-            'Juni' => 'June',
-            'Juli' => 'July',
-            'Agustus' => 'August',
-            'September' => 'September',
-            'Oktober' => 'October',
-            'November' => 'November',
-            'Desember' => 'December',
+            'januari' => 'January',
+            'februari' => 'February',
+            'maret' => 'March',
+            'april' => 'April',
+            'mei' => 'May',
+            'juni' => 'June',
+            'juli' => 'July',
+            'agustus' => 'August',
+            'september' => 'September',
+            'oktober' => 'October',
+            'november' => 'November',
+            'desember' => 'December',
         ];
 
         try {
