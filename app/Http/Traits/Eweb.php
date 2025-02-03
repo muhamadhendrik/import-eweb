@@ -136,7 +136,7 @@ trait Eweb
                 'no_transaksi' => $arr_data["no_sinv"],
             ], [
                 'no_transaksi' => $arr_data["no_sinv"],
-                'tanggal' => $this->convertToDatabaseDate($arr_data["date_sinv"]),
+                'tanggal' => $this->convertToDatabaseDate(ucwords($arr_data["date_sinv"])),
                 'customer_id' => $arr_data["id_customer"],
                 'total' => $total,
                 'created_by' => Auth::user()->name
