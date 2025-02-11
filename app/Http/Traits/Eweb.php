@@ -92,20 +92,11 @@ trait Eweb
                 continue; // Skip ke detail berikutnya
             }
 
-            $total_pembagi = $detail['total'] / $detail['qty'];
-            $diskon = $detail['harga_satuan'] - $total_pembagi;
-
-            $harga_satuan = $detail['harga_satuan'];
-            if ($diskon <= 0) {
-                $harga_satuan = $detail['total'];
-                $diskon = 0;
-            }
 
             $arr_detail[] = array(
                 'kode_original_inv' => $detail['item'],
                 'cqty'              => $detail['qty'],
-                'harga_satuan'      => (float)$harga_satuan,
-                'discount_item'     => $diskon > 0 ? (float)$diskon : 0,
+                'harga_satuan'      => $detail['harga_satuan'],
             );
 
             $total += $detail['total'];

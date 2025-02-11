@@ -58,11 +58,13 @@ class ImportEwebController extends Controller
                 $totalRows++;
             }
 
+            $harga_satuan = $row[13] / $row[12];
+
             $arr_orders[$no_transaksi]['order_detail'][] = [
                 'kode_item' => $row[11],
                 'qty' => $row[12],
-                'harga_satuan' => $row[13],
-                'total' => $row[14],
+                'harga_satuan' => $harga_satuan,
+                'total' => $row[13],
             ];
         }
 

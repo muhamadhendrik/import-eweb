@@ -65,10 +65,10 @@ class ImportEwebJob implements ShouldQueue
                 $arr_order_detail = [];
                 foreach ($order['order_detail'] as $detail) {
                     $arr_order_detail[] = [
-                        'item' => (string)$detail['kode_item'], // Pastikan string
-                        'qty' => (int)$detail['qty'],         // Pastikan integer
-                        'harga_satuan' => (float)$detail['harga_satuan'], // Pastikan float
-                        'total' => (float)$detail['total'],   // Pastikan float
+                        'item' => $detail['kode_item'], // Pastikan string
+                        'qty' => $detail['qty'],         // Pastikan integer
+                        'harga_satuan' => $detail['harga_satuan'], // Pastikan float
+                        'total' => $detail['total'],   // Pastikan float
                     ];
                 }
 
