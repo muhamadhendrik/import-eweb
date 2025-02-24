@@ -21,7 +21,9 @@ trait Eweb
             $id_branches[] = '24';
         } elseif (strcasecmp($customer["id_branches"], 'SATWAGIA OFFICIAL STORE SANDBOX') == 0) {
             $id_branches[] = '83';
-        } else {
+        } elseif (strcasecmp($customer["id_branches"], 'PT TRI DAYA VARUNA') == 0) {
+            $id_branches[] = '23';
+        }else {
             $id_branches[] = '83';
 
             Log::error('Branches sync customer not found');
@@ -72,6 +74,8 @@ trait Eweb
             $id_company = '24';
         } elseif (strcasecmp($data["id_company"], 'SATWAGIA OFFICIAL STORE SANDBOX') == 0) {
             $id_company = '83';
+        }elseif (strcasecmp($data["id_company"], 'PT TRI DAYA VARUNA') == 0) {
+            $id_company = '23';
         } else {
             $id_company = '83';
 
